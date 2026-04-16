@@ -110,9 +110,7 @@ export class App implements OnInit, OnDestroy {
           queryParts.push(`search=${encodeURIComponent(search)}`);
         }
 
-        if (sort !== 'recent') {
-          queryParts.push(`sort=${encodeURIComponent(sort)}`);
-        }
+        queryParts.push(`sort=${encodeURIComponent(sort)}`);
 
         const queryString = queryParts.join('&');
         const nextUrl = queryString

@@ -21,6 +21,7 @@
     role="listbox"
     aria-label="Users list"
     (focusin)="onPanelFocusIn()"
+    (focusout)="onPanelFocusOut($event)"
     (keydown)="onListKeydown($event)"
   >
     <app-virtual-scroller

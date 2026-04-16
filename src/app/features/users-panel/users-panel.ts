@@ -66,6 +66,22 @@ export class UsersPanel implements OnChanges {
     }
 
     this.isListInteracted = true;
+
+    if (this.activeUserId === null) {
+      this.activeUserId = this.users[0].id;
+    }
+  }
+
+  onPanelFocusOut(event: FocusEvent): void {
+    const nextFocused = event.relatedTarget as Node | null;
+    const currentTarget = event.currentTarget as HTMLElement | null;
+
+    if (currentTarget && nextFocused && currentTarget.contains(nextFocused)) {
+      return;
+    }
+
+    this.isListInteracted = false;
+    this.activeUserId = null;
   }
 
   onListKeydown(event: KeyboardEvent): void {

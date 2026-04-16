@@ -89,14 +89,22 @@ export class PostsPanel implements OnChanges {
     }
 
     this.isListInteracted = true;
+
+    if (this.activePostId === null) {
+      this.activePostId = this.posts[0].id;
+    }
   }
 
-  onPanelBlur(): void {
-    if (!this.dialogOpen) {
+  onPanelFocusOut(event: FocusEvent): void {
+    const nextFocused = event.relatedTarget as Node | null;
+    const currentTarget = event.currentTarget as HTMLElement | null;
+
+    if (currentTarget && nextFocused && currentTarget.contains(nextFocused)) {
       return;
     }
 
     this.isListInteracted = false;
+    this.activePostId = null;
   }
 
   onListKeydown(event: KeyboardEvent): void {

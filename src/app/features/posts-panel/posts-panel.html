@@ -45,7 +45,7 @@
     role="listbox"
     aria-label="Posts list"
     (focusin)="onPanelFocusIn()"
-    (blur)="onPanelBlur()"
+    (focusout)="onPanelFocusOut($event)"
     (keydown)="onListKeydown($event)"
   >
     <app-virtual-scroller
