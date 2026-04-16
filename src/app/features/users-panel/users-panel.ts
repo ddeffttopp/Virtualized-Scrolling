@@ -34,7 +34,20 @@ export class UsersPanel implements OnChanges {
   activeUserId: number | null = null;
   isListInteracted = false;
 
+  private shouldActivateOnNextFocus = false;
+
   trackByUserId = (_: number, user: UserModel): number => user.id;
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Tab') {
+      this.shouldActivateOnNextFocus = true;
+    }
+  }
+  @HostListener('document:pointerdown')
+  onDocumentPointerDown(): void {
+    this.shouldActivateOnNextFocus = false;
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['users']) {
@@ -50,14 +63,10 @@ export class UsersPanel implements OnChanges {
     return this.isListInteracted && this.activeUserId === userId;
   }
 
-  setActiveUser(userId: number): void {
-    this.activeUserId = userId;
-    this.isListInteracted = true;
-  }
-
   onUserClick(userId: number): void {
-    this.setActiveUser(userId);
     this.toggleUser(userId);
+    this.isListInteracted = false;
+    this.activeUserId = null;
   }
 
   onPanelFocusIn(): void {
@@ -67,9 +76,15 @@ export class UsersPanel implements OnChanges {
 
     this.isListInteracted = true;
 
+    if (!this.shouldActivateOnNextFocus) {
+      return;
+    }
+
     if (this.activeUserId === null) {
       this.activeUserId = this.users[0].id;
     }
+
+    this.shouldActivateOnNextFocus = false;
   }
 
   onPanelFocusOut(event: FocusEvent): void {
