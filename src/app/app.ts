@@ -1,12 +1,171 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+  computed,
+  effect,
+  EffectRef,
+  Injector, OnDestroy
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AppStore, PostSort } from './core/store/app.store';
+import { PostsPanel } from './features/posts-panel/posts-panel';
+import { UsersPanel } from './features/users-panel/users-panel';
+import { PostDialog } from './features/post-dialog/post-dialog';
+import { PostModel } from './core/models/post.model';
+import { UserModel } from './core/models/user.model';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [
+    CommonModule,
+    UsersPanel,
+    PostsPanel,
+    PostDialog],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App {
-  protected readonly title = signal('Virtualized-Scrolling');
+export class App implements OnInit, OnDestroy {
+  readonly store = inject(AppStore);
+  private readonly injector = inject(Injector);
+
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private urlSyncEffectRef: EffectRef | null = null;
+  private isRestoringFromUrl = true;
+
+  readonly usersMap = computed(() => {
+    const map = new Map<number, UserModel>();
+
+    for (const user of this.store.users()) {
+      map.set(user.id, user);
+    }
+
+    return map;
+  });
+
+  ngOnInit(): void {
+    this.store.init();
+    this.restoreStateFromBrowserUrl();
+    this.initUrlSync();
+    this.isRestoringFromUrl = false;
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+
+    this.urlSyncEffectRef?.destroy();
+  }
+
+  private restoreStateFromBrowserUrl(): void {
+    const params = new URLSearchParams(window.location.search);
+
+    const usersParam = params.get('users');
+    const searchParam = params.get('search');
+    const sortParam = params.get('sort');
+
+    const usersSelected = usersParam
+      ? usersParam
+        .split(',')
+        .map(value => Number(value.trim()))
+        .filter(value => Number.isInteger(value) && value > 0)
+      : [];
+
+    const sort: PostSort =
+      sortParam === 'title' || sortParam === 'recent'
+        ? sortParam
+        : 'recent';
+
+    this.store.restoreState({
+      usersSelected,
+      postSearch: searchParam ?? '',
+      sort
+    });
+  }
+
+  private initUrlSync(): void {
+    this.urlSyncEffectRef?.destroy();
+
+    this.urlSyncEffectRef = effect(
+      () => {
+        if (this.isRestoringFromUrl) {
+          return;
+        }
+
+        const selectedUsers = Array.from(this.store.usersSelected()).sort((a, b) => a - b);
+        const search = this.store.postSearch().trim();
+        const sort = this.store.sort();
+
+        const queryParts: string[] = [];
+
+        if (selectedUsers.length > 0) {
+          queryParts.push(`users=${selectedUsers.join(',')}`);
+        }
+
+        if (search) {
+          queryParts.push(`search=${encodeURIComponent(search)}`);
+        }
+
+        if (sort !== 'recent') {
+          queryParts.push(`sort=${encodeURIComponent(sort)}`);
+        }
+
+        const queryString = queryParts.join('&');
+        const nextUrl = queryString
+          ? `${window.location.pathname}?${queryString}`
+          : window.location.pathname;
+
+        window.history.replaceState({}, '', nextUrl);
+      },
+      { injector: this.injector }
+    );
+  }
+
+  resolveAuthor = (userId: number): UserModel | null => {
+    return this.usersMap().get(userId) ?? null;
+  };
+
+  toggleUser = (userId: number): void => {
+    this.store.toggleUser(userId);
+  };
+
+  clearSelection = (): void => {
+    this.store.clearUsersSelection();
+  };
+
+  onSearchChange = (value: string): void => {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+
+    this.searchDebounceTimer = setTimeout(() => {
+      this.store.setPostSearch(value);
+      this.searchDebounceTimer = null;
+    }, 200);
+  };
+
+  onSearchCleared = (): void => {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = null;
+    }
+
+    this.store.setPostSearch('');
+  };
+
+  onSortChange = (value: PostSort): void => {
+    this.store.setSort(value);
+  };
+
+  openPost = (post: PostModel): void => {
+    this.store.openPost(post);
+  };
+
+  closePost = (): void => {
+    this.store.closePost();
+  };
 }

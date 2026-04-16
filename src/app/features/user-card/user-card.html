@@ -1,0 +1,14 @@
+<div class="user-card" [class.selected]="selected">
+  <div class="avatar" [style.background]="user.avatarColor">
+    {{ initials }}
+  </div>
+
+  <div class="content">
+    <div class="name">{{ user.name }}</div>
+    <div class="meta">{{ user.postCount }} posts</div>
+  </div>
+
+  @if (selected) {
+    <div class="check">✓</div>
+  }
+</div>

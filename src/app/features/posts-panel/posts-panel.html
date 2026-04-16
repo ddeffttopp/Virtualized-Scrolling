@@ -1,0 +1,75 @@
+<section class="panel">
+  <header class="panel-header">
+    <div class="header-top">
+      <div>
+        <h2>Posts</h2>
+        <p>Showing {{ posts.length }} of {{ totalPostsCount }} posts</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="search-field">
+        <input
+          type="text"
+          [value]="searchDraft"
+          (input)="onSearchInput($event)"
+          placeholder="Search posts..."
+        />
+
+        @if (searchDraft) {
+          <button
+            type="button"
+            class="clear-search-btn"
+            (click)="clearSearch()"
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        }
+      </div>
+
+      <div class="sort-field">
+        <select [value]="sort" (change)="onSortChange($event)" aria-label="Sort posts">
+          <option value="recent">Recent</option>
+          <option value="title">Title</option>
+        </select>
+
+        <span class="sort-chevron" aria-hidden="true"></span>
+      </div>
+    </div>
+  </header>
+
+  <div
+    class="panel-body"
+    tabindex="0"
+    role="listbox"
+    aria-label="Posts list"
+    (focusin)="onPanelFocusIn()"
+    (blur)="onPanelBlur()"
+    (keydown)="onListKeydown($event)"
+  >
+    <app-virtual-scroller
+      [items]="posts"
+      [trackBy]="trackByPostId"
+      [estimatedItemHeight]="170"
+      [overscan]="6"
+      emptyText="No posts found"
+    >
+      <ng-template let-post let-index="index">
+        <div
+          class="post-row"
+          [class.active]="isActive(post.id)"
+          [attr.aria-selected]="isActive(post.id)"
+          role="option"
+          (click)="setActivePost(post.id); openPost(post)"
+          [attr.data-index]="index"
+        >
+          <app-post-card
+            [post]="post"
+            [author]="resolveAuthor(post.userId)"
+          />
+        </div>
+      </ng-template>
+    </app-virtual-scroller>
+  </div>
+</section>

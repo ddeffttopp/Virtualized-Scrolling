@@ -1,0 +1,50 @@
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h2>Users</h2>
+      <p>{{ selectedUserIds.size }} selected of {{ totalUsersCount }}</p>
+    </div>
+
+    <button
+      type="button"
+      class="clear-btn"
+      (click)="clearSelection()"
+      [disabled]="selectedUserIds.size === 0"
+    >
+      Clear
+    </button>
+  </header>
+
+  <div
+    class="panel-body"
+    tabindex="0"
+    role="listbox"
+    aria-label="Users list"
+    (focusin)="onPanelFocusIn()"
+    (keydown)="onListKeydown($event)"
+  >
+    <app-virtual-scroller
+      [items]="users"
+      [trackBy]="trackByUserId"
+      [estimatedItemHeight]="84"
+      [overscan]="8"
+      emptyText="No users"
+    >
+      <ng-template let-user let-index="index">
+        <div
+          class="user-row"
+          [class.active]="isActive(user.id)"
+          [attr.aria-selected]="isSelected(user.id)"
+          role="option"
+          (click)="onUserClick(user.id)"
+          [attr.data-index]="index"
+        >
+          <app-user-card
+            [user]="user"
+            [selected]="isSelected(user.id)"
+          />
+        </div>
+      </ng-template>
+    </app-virtual-scroller>
+  </div>
+</section>

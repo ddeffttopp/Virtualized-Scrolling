@@ -1,0 +1,19 @@
+<div #viewport class="viewport" (scroll)="onScroll()">
+  @if (items.length > 0) {
+    <div [style.height.px]="topPadding()"></div>
+
+    @for (visibleItem of visibleItems(); track visibleItem.key) {
+      <div #itemElement class="item">
+        <ng-container
+          *ngTemplateOutlet="itemTemplate; context: getTemplateContext(visibleItem)"
+        />
+      </div>
+    }
+
+    <div [style.height.px]="bottomPadding()"></div>
+  } @else {
+    <div class="empty">
+      {{ emptyText }}
+    </div>
+  }
+</div>

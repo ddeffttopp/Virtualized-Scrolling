@@ -1,0 +1,19 @@
+<article class="post-card">
+  <div class="top-row">
+    <div class="title-wrap">
+      <h3 class="title">{{ post.title }}</h3>
+      <div class="author">{{ author?.name ?? 'Unknown author' }}</div>
+    </div>
+
+    <div class="date">
+      {{ post.createdAt | date:'MMM d, y' }}
+    </div>
+  </div>
+
+  <p class="body">{{ previewBody }}</p>
+
+  <div class="bottom-row">
+    <span>{{ post.commentCount }} comments</span>
+    <span>User #{{ post.userId }}</span>
+  </div>
+</article>

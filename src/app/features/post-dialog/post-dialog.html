@@ -1,0 +1,45 @@
+<div class="dialog-backdrop" (click)="onBackdropClick($event)">
+  <div
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="post-dialog-title"
+  >
+    <button
+      class="close-btn"
+      type="button"
+      (click)="close()"
+      aria-label="Close post dialog"
+      autofocus
+    >
+      ×
+    </button>
+
+    <div class="post-section">
+      <div class="post-meta">
+        <span>{{ author?.name ?? 'Unknown author' }}</span>
+        <span>{{ post.createdAt | date:'MMM d, y, HH:mm' }}</span>
+      </div>
+
+      <h2 id="post-dialog-title" class="title">{{ post.title }}</h2>
+      <p class="body">{{ post.body }}</p>
+    </div>
+
+    <div class="comments-section">
+      <h3 class="comments-title">Comments ({{ comments.length }})</h3>
+
+      <div class="comments-list">
+        @for (comment of comments; track comment.id) {
+          <div class="comment">
+            <div class="comment-top">
+              <strong>{{ comment.authorName }}</strong>
+              <span>{{ comment.createdAt | date:'MMM d, HH:mm' }}</span>
+            </div>
+
+            <p>{{ comment.body }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

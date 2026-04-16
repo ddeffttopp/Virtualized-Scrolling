@@ -1,0 +1,67 @@
+:host {
+  display: block;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px 14px;
+  border: 1px solid #dbe5ef;
+  border-radius: 14px;
+  background: #ffffff;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.user-card:hover {
+  border-color: #bdd0e3;
+  background: #f8fbff;
+}
+
+.user-card.selected {
+  background: #eaf3ff;
+  border-color: #96bdf0;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.content {
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #243447;
+}
+
+.meta {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6f8599;
+}
+
+.check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #4b84d9;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
