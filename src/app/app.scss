@@ -1,9 +1,7 @@
 :host {
   display: block;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(169, 201, 255, 0.22), transparent 28%),
-    linear-gradient(180deg, #eef3f8 0%, #e9f0f7 100%);
+  background: transparent;
   color: #243447;
   font-family: Inter, Arial, sans-serif;
 }
@@ -42,10 +40,20 @@ app-posts-panel {
   .layout {
     grid-template-columns: 1fr;
     height: auto;
+    min-height: 0;
+    gap: 12px;
   }
 
   app-users-panel,
   app-posts-panel {
-    min-height: 420px;
+    min-height: 0;
+  }
+
+  app-users-panel {
+    height: clamp(220px, 40vh, 340px);
+  }
+
+  app-posts-panel {
+    height: clamp(380px, 80vh, 760px);
   }
 }
