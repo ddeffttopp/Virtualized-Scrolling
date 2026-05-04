@@ -6,7 +6,7 @@ import {
   ContentChild,
   ElementRef,
   Input,
-  OnChanges,
+  OnChanges, OnDestroy,
   QueryList,
   signal,
   SimpleChanges,
@@ -29,7 +29,7 @@ interface VisibleItem<T> {
   styleUrl: './virtual-scroller.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VirtualScroller<T = unknown> implements OnChanges, AfterViewInit {
+export class VirtualScroller<T = unknown> implements OnChanges, AfterViewInit, OnDestroy {
   @Input({ required: true }) items: T[] = [];
   @Input() estimatedItemHeight = 80;
   @Input() overscan = 5;
@@ -48,6 +48,9 @@ export class VirtualScroller<T = unknown> implements OnChanges, AfterViewInit {
   private heightCache = new Map<string | number, number>();
   private offsets: number[] = [];
   private keys: Array<string | number> = [];
+
+  private animationFrameId: number | null = null;
+  private pendingScrollUpdate = false;
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
@@ -74,7 +77,21 @@ export class VirtualScroller<T = unknown> implements OnChanges, AfterViewInit {
   }
 
   onScroll(): void {
-    this.updateVisibleItems();
+    this.scheduleVisibleItemsUpdate();
+  }
+
+  private scheduleVisibleItemsUpdate(): void {
+    if (this.pendingScrollUpdate) {
+      return;
+    }
+
+    this.pendingScrollUpdate = true;
+
+    this.animationFrameId = requestAnimationFrame(() => {
+      this.pendingScrollUpdate = false;
+      this.animationFrameId = null;
+      this.updateVisibleItems();
+    });
   }
 
   ensureIndexVisible(index: number): void {
@@ -262,5 +279,14 @@ export class VirtualScroller<T = unknown> implements OnChanges, AfterViewInit {
     }
 
     return result;
+  }
+
+  ngOnDestroy(): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
+    this.pendingScrollUpdate = false;
   }
 }

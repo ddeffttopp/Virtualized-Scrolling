@@ -8,7 +8,7 @@
     <button
       type="button"
       class="clear-btn"
-      (click)="clearSelection()"
+      (click)="selectionCleared.emit()"
       [disabled]="selectedUserIds.size === 0"
     >
       Clear

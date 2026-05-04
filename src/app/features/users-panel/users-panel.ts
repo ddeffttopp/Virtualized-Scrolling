@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
-  Component,
+  Component, EventEmitter,
   HostListener,
   Input,
-  OnChanges,
+  OnChanges, Output,
   SimpleChanges,
   ViewChild
 } from '@angular/core';
@@ -25,8 +25,8 @@ export class UsersPanel implements OnChanges {
   @Input({ required: true }) selectedUserIds: Set<number> = new Set<number>();
   @Input({ required: true }) totalUsersCount = 0;
 
-  @Input({ required: true }) toggleUser!: (userId: number) => void;
-  @Input({ required: true }) clearSelection!: () => void;
+  @Output() userToggled = new EventEmitter<number>();
+  @Output() selectionCleared = new EventEmitter<void>();
 
   @ViewChild(VirtualScroller)
   scroller?: VirtualScroller<UserModel>;
@@ -64,7 +64,7 @@ export class UsersPanel implements OnChanges {
   }
 
   onUserClick(userId: number): void {
-    this.toggleUser(userId);
+    this.userToggled.emit(userId);
     this.isListInteracted = false;
     this.activeUserId = null;
   }
@@ -118,7 +118,7 @@ export class UsersPanel implements OnChanges {
     if (event.key === 'Enter' || event.key === ' ') {
       const activeUser = this.users.find(user => user.id === this.activeUserId);
       if (activeUser) {
-        this.toggleUser(activeUser.id);
+        this.userToggled.emit(activeUser.id);
       }
       return;
     }

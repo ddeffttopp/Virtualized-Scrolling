@@ -10,8 +10,8 @@
       [users]="store.users()"
       [selectedUserIds]="store.usersSelected()"
       [totalUsersCount]="store.totalUsersCount()"
-      [toggleUser]="toggleUser"
-      [clearSelection]="clearSelection"
+      (userToggled)="toggleUser($event)"
+      (selectionCleared)="clearSelection()"
     />
 
     <app-posts-panel

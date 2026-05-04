@@ -1,15 +1,24 @@
-import { computed, Injectable, signal } from '@angular/core';
-import { generateComments, generatePosts, generateUsers } from '../data/mock-data';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { generateComments } from '../data/mock-data';
 import { CommentModel } from '../models/comment.model';
 import { PostModel } from '../models/post.model';
 import { UserModel } from '../models/user.model';
+import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 export type PostSort = 'recent' | 'title';
+interface MockData {
+  users: UserModel[];
+  posts: PostModel[];
+}
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppStore {
+  private readonly http = inject(HttpClient);
+
   readonly users = signal<UserModel[]>([]);
   readonly posts = signal<PostModel[]>([]);
 
@@ -52,12 +61,13 @@ export class AppStore {
   readonly totalUsersCount = computed(() => this.users().length);
   readonly totalPostsCount = computed(() => this.posts().length);
 
-  init(): void {
-    const users = generateUsers(1000);
-    const posts = generatePosts(10000, users);
+  async init(): Promise<void> {
+    const data = await firstValueFrom(
+      this.http.get<MockData>('/mock-data.json')
+    );
 
-    this.users.set(users);
-    this.posts.set(posts);
+    this.users.set(data.users);
+    this.posts.set(data.posts);
   }
 
   restoreState(params: {

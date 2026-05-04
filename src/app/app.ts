@@ -46,8 +46,9 @@ export class App implements OnInit, OnDestroy {
     return map;
   });
 
-  ngOnInit(): void {
-    this.store.init();
+  async ngOnInit(): Promise<void> {
+    await this.store.init();
+
     this.restoreStateFromBrowserUrl();
     this.initUrlSync();
     this.isRestoringFromUrl = false;
