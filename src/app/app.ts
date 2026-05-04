@@ -6,7 +6,7 @@ import {
   computed,
   effect,
   EffectRef,
-  Injector, OnDestroy
+  Injector, OnDestroy, DestroyRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppStore, PostSort } from './core/store/app.store';
@@ -15,6 +15,8 @@ import { UsersPanel } from './features/users-panel/users-panel';
 import { PostDialog } from './features/post-dialog/post-dialog';
 import { PostModel } from './core/models/post.model';
 import { UserModel } from './core/models/user.model';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -30,9 +32,11 @@ import { UserModel } from './core/models/user.model';
 })
 export class App implements OnInit, OnDestroy {
   readonly store = inject(AppStore);
-  private readonly injector = inject(Injector);
 
-  private searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly searchInput$ = new Subject<string>();
+
   private urlSyncEffectRef: EffectRef | null = null;
   private isRestoringFromUrl = true;
 
@@ -49,17 +53,27 @@ export class App implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     await this.store.init();
 
+    this.initSearchDebounce();
     this.restoreStateFromBrowserUrl();
     this.initUrlSync();
+
     this.isRestoringFromUrl = false;
   }
 
   ngOnDestroy(): void {
-    if (this.searchDebounceTimer) {
-      clearTimeout(this.searchDebounceTimer);
-    }
-
     this.urlSyncEffectRef?.destroy();
+  }
+
+  private initSearchDebounce(): void {
+    this.searchInput$
+      .pipe(
+        debounceTime(200),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(value => {
+        this.store.setPostSearch(value);
+      });
   }
 
   private restoreStateFromBrowserUrl(): void {
@@ -137,22 +151,11 @@ export class App implements OnInit, OnDestroy {
   };
 
   onSearchChange = (value: string): void => {
-    if (this.searchDebounceTimer) {
-      clearTimeout(this.searchDebounceTimer);
-    }
-
-    this.searchDebounceTimer = setTimeout(() => {
-      this.store.setPostSearch(value);
-      this.searchDebounceTimer = null;
-    }, 200);
+    this.searchInput$.next(value);
   };
 
   onSearchCleared = (): void => {
-    if (this.searchDebounceTimer) {
-      clearTimeout(this.searchDebounceTimer);
-      this.searchDebounceTimer = null;
-    }
-
+    this.searchInput$.next('');
     this.store.setPostSearch('');
   };
 
